@@ -2,7 +2,7 @@ package com.ju531.juencryptionmanager.model
 
 sealed class EncryptionResult<out T> {
     data class Success<T>(val data : T) : EncryptionResult<T>()
-    data class Failure(val msg : String) : EncryptionResult<Nothing>()
+    data class Error(val e: Throwable): EncryptionResult<Nothing>()
 }
 
 data class EncryptResultData (
