@@ -1,24 +1,21 @@
 package com.ju531.juencryptionmanager.model
 
-import java.security.Key
-
 sealed class EncryptionCommand {
-
     abstract val type : EncryptionType
     abstract val text : String
-    abstract val key : Key
+    abstract val key : String
 }
 
 data class Encrypt(
     override val type : EncryptionType,
     override val text : String,
-    override val key : Key
+    override val key : String
 ) : EncryptionCommand()
 
 data class Decrypt(
     override val type: EncryptionType,
     override val text: String,
-    override val key: Key,
+    override val key: String,
     val iv: ByteArray? = null
 ) : EncryptionCommand() {
     override fun equals(other: Any?): Boolean {
