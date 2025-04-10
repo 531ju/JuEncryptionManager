@@ -1,6 +1,8 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.hilt)
+    alias(libs.plugins.jetbrains.kotlin.kapt)
 }
 
 android {
@@ -51,5 +53,12 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 
+    implementation(libs.androidx.work)
+
+    implementation(libs.bundles.hilts)
+    kapt(libs.bundles.hiltComplier)
+
     implementation("com.github.531ju:JuEncryptionManager:1.0.0")
+
+    implementation(libs.androidx.security.crypto)
 }
