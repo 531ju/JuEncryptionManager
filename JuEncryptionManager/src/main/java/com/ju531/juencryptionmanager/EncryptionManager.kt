@@ -16,63 +16,40 @@ import java.security.spec.X509EncodedKeySpec
 import java.util.Base64
 import javax.crypto.Cipher
 import javax.crypto.SecretKey
+import javax.crypto.spec.GCMParameterSpec
 import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
 
 class EncryptionManager {
 
-    fun encrypt(param : Encrypt) : EncryptionResult<EncryptResultData> {
+    fun encrypt(param: Encrypt): EncryptionResult<EncryptResultData> = runCatching {
         val cipher = Cipher.getInstance(param.type.convertToString())
-        return runCatching {
-            val key = generateKey(param.key, param.type, true)
-            cipher.init(Cipher.ENCRYPT_MODE, key)
+        val key = generateKey(param.key, param.type, true)
+        cipher.init(Cipher.ENCRYPT_MODE, key)
+        val encrypted = cipher.doFinal(param.text.toByteArray(Charsets.UTF_8))
+        EncryptResultData(Base64.getEncoder().encodeToString(encrypted), cipher.iv)
+    }.fold(
+        onSuccess = { EncryptionResult.Success(it) },
+        onFailure = { EncryptionResult.Error(it) }
+    )
 
-            val byte = param.text.toByteArray(Charsets.UTF_8)
-            val encryptBytes = cipher.doFinal(byte)
-
-            Base64.getEncoder().encodeToString(encryptBytes)
-        }.fold(
-            onSuccess = {
-                val ivSpec = cipher.parameters
-                if(ivSpec == null) {
-                    EncryptionResult.Success(EncryptResultData(it))
-                } else {
-                    EncryptionResult.Success(
-                        EncryptResultData(
-                            data = it,
-                            iv = ivSpec.getParameterSpec(IvParameterSpec::class.java).iv
-                        )
-                    )
-                }
-            },
-            onFailure = {
-                EncryptionResult.Error(it)
-            }
-        )
-    }
-
-    fun decrypt(param : Decrypt) : EncryptionResult<DecryptResultData> {
+    fun decrypt(param: Decrypt): EncryptionResult<DecryptResultData> = runCatching {
         val cipher = Cipher.getInstance(param.type.convertToString())
-        return runCatching {
-            val key = generateKey(param.key, param.type, false)
-            if(param.iv == null) {
-                cipher.init(Cipher.DECRYPT_MODE, key)
-            } else {
-                cipher.init(Cipher.DECRYPT_MODE, key, IvParameterSpec(param.iv))
+        val key = generateKey(param.key, param.type, false)
+        when {
+            param.type == EncryptionType.AES_GCM_NO_PADDING -> {
+                requireNotNull(param.iv) { "GCM requires the original IV" }
+                cipher.init(Cipher.DECRYPT_MODE, key, GCMParameterSpec(128, param.iv))
             }
-
-            val base64EncryptedByte = param.text.toByteArray(Charsets.UTF_8)
-            val encryptedByte = Base64.getDecoder().decode(base64EncryptedByte)
-            cipher.doFinal(encryptedByte)
-        }.fold(
-            onSuccess = {
-                EncryptionResult.Success(DecryptResultData(String(it)))
-            },
-            onFailure = {
-                EncryptionResult.Error(it)
-            }
-        )
-    }
+            param.iv != null -> cipher.init(Cipher.DECRYPT_MODE, key, IvParameterSpec(param.iv))
+            else -> cipher.init(Cipher.DECRYPT_MODE, key)
+        }
+        val encrypted = Base64.getDecoder().decode(param.text)
+        DecryptResultData(String(cipher.doFinal(encrypted), Charsets.UTF_8))
+    }.fold(
+        onSuccess = { EncryptionResult.Success(it) },
+        onFailure = { EncryptionResult.Error(it) }
+    )
 
     private fun generateKey(key : String, type : EncryptionType, isEncrypt : Boolean) : Key {
         return when(type) {
