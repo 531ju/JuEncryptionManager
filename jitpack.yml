@@ -1,0 +1,4 @@
+jdk:
+  - openjdk17
+install:
+  - ./gradlew :JuEncryptionManager:testDebugUnitTest :JuEncryptionManager:assembleRelease :JuEncryptionManager:publishReleasePublicationToMavenLocal
