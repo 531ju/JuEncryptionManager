@@ -11,7 +11,7 @@ afterEvaluate {
                 from(components["release"])
                 groupId = "com.github.531ju"
                 artifactId = "JuEncryptionManager"
-                version = "1.0.2"
+                version = "1.0.1"
             }
         }
     }

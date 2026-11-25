@@ -4,7 +4,63 @@ Android용 문자열 암복호화 라이브러리입니다. 현재 설정은 min
 
 ## 사용 방법
 
-이 저장소의 Android 프로젝트에서는 `implementation(project(":JuEncryptionManager"))`로 모듈을 참조합니다. 외부 배포 좌표의 사용 가능 여부는 검증하지 않았습니다.
+### 외부 Android 프로젝트에 Maven으로 설치 (1.0.1)
+
+JitPack Maven 저장소에 배포된 `com.github.531ju:JuEncryptionManager:1.0.1`을 사용합니다. Maven Central 배포가 아니므로 JitPack 저장소를 추가해야 합니다. 기존 1.0.1 태그와 Release는 그대로 유지합니다.
+
+**Kotlin DSL** — 프로젝트의 `settings.gradle.kts`에 추가합니다. 기존 저장소 설정과 병합하세요.
+
+```kotlin
+dependencyResolutionManagement {
+    repositories {
+        google()
+        mavenCentral()
+        maven {
+            url = uri("https://jitpack.io")
+            content { includeGroup("com.github.531ju") }
+        }
+    }
+}
+```
+
+앱 모듈의 `build.gradle.kts`:
+
+```kotlin
+dependencies {
+    implementation("com.github.531ju:JuEncryptionManager:1.0.1")
+}
+```
+
+**Groovy DSL** — 프로젝트의 `settings.gradle`:
+
+```groovy
+dependencyResolutionManagement {
+    repositories {
+        google()
+        mavenCentral()
+        maven {
+            url = uri('https://jitpack.io')
+            content { includeGroup 'com.github.531ju' }
+        }
+    }
+}
+```
+
+앱 모듈의 `build.gradle`:
+
+```groovy
+dependencies {
+    implementation 'com.github.531ju:JuEncryptionManager:1.0.1'
+}
+```
+
+앱은 minSdk 26 이상이어야 합니다. AAR을 수동으로 복사할 필요가 없으며 Kotlin stdlib, AndroidX, Material 등 전이 의존성은 Maven 메타데이터로 전달됩니다. Gradle 동기화 후 아래 API를 사용하세요.
+
+- [Maven POM](https://jitpack.io/com/github/531ju/JuEncryptionManager/1.0.1/JuEncryptionManager-1.0.1.pom)
+- [Maven AAR](https://jitpack.io/com/github/531ju/JuEncryptionManager/1.0.1/JuEncryptionManager-1.0.1.aar)
+- [1.0.1 Release](https://github.com/531ju/JuEncryptionManager/releases/tag/1.0.1)
+
+이 저장소 내부에서 직접 개발할 때는 `implementation(project(":JuEncryptionManager"))`로 모듈을 참조합니다.
 
 ```kotlin
 import com.ju531.juencryptionmanager.EncryptionManager
@@ -43,4 +99,4 @@ when (val result = manager.encrypt(Encrypt(type, "예제 문자열", key))) {
 
 `./gradlew --offline :JuEncryptionManager:testDebugUnitTest`
 
-GCM 한글/이모지 왕복·변조·IV 누락, RSA OAEP 왕복, CTR 왕복·잘못된 입력 회귀 테스트를 포함합니다. 현재 환경에서는 기존 kapt 1.7.10 플러그인 캐시 부재로 Gradle 설정 단계에서 중단되어 테스트와 Android 빌드는 미실행입니다. 의존성을 다운로드하거나 배포하지 않았습니다.
+GCM 한글/이모지 왕복·변조·IV 누락, RSA OAEP 왕복, CTR 왕복·잘못된 입력 회귀 테스트를 포함합니다. 1.0.1 소스의 단위 테스트 4건과 Release AAR 빌드를 통과했습니다. JitPack의 1.0.1 POM/AAR 공개 다운로드 및 AAR ZIP 무결성을 확인했습니다. Android 기기 실행과 프로바이더 간 OAEP 상호운용은 별도 검증이 필요합니다.
